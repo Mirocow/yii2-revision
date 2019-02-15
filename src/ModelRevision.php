@@ -72,7 +72,7 @@ class ModelRevision extends Behavior
                     'attributes' => $newAttributes,
                 ]
             );
-            $this->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
+            $owner->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
 
             $fields[ $this->revisionModelId ] = $owner->primaryKey;
             $fields[ $this->revisionAttributeData ] = $newAttributes;
@@ -90,7 +90,7 @@ class ModelRevision extends Behavior
                     'attributes' => $newAttributes,
                 ]
             );
-            $this->trigger(self::EVENT_AFTER_REVISION_SAVE, $event);
+            $owner->trigger(self::EVENT_AFTER_REVISION_SAVE, $event);
 
         }
 
