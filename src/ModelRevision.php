@@ -60,19 +60,24 @@ class ModelRevision extends Behavior
             $oldAttributes = $this->getRevisionAttributes($oldAttributes);
         }
 
+        $event = new RevisionEvent(
+            [
+                'model' => $owner,
+                'newAttributes' => $newAttributes,
+                'oldAttributes' => $oldAttributes,
+            ]
+        );
+        $owner->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
+
+        if(method_exists($owner, self::EVENT_BEFORE_REVISION_SAVE)){
+            $owner->{self::EVENT_BEFORE_REVISION_SAVE}($event);
+        }
+
         $existsRecord = ($this->classModel)::find()
             ->where([$this->revisionModelId => $owner->primaryKey])
             ->exists();
 
         if(!$existsRecord || $newAttributes != $oldAttributes) {
-
-            $event = new RevisionEvent(
-                [
-                    'model' => $owner,
-                    'attributes' => $newAttributes,
-                ]
-            );
-            $owner->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
 
             $fields[ $this->revisionModelId ] = $owner->primaryKey;
             $fields[ $this->revisionAttributeData ] = $newAttributes;
@@ -87,10 +92,15 @@ class ModelRevision extends Behavior
             $event = new RevisionEvent(
                 [
                     'model' => $owner,
-                    'attributes' => $newAttributes,
+                    'newAttributes' => $newAttributes,
+                    'oldAttributes' => $oldAttributes,
                 ]
             );
             $owner->trigger(self::EVENT_AFTER_REVISION_SAVE, $event);
+
+            if(method_exists($owner, self::EVENT_AFTER_REVISION_SAVE)){
+                $owner->{self::EVENT_AFTER_REVISION_SAVE}($event);
+            }
 
         }
 

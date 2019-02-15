@@ -14,5 +14,8 @@ class RevisionEvent extends Event
     public $model = null;
 
     /** @var array  */
-    public $attributes = [];
+    public $newAttributes = [];
+
+    /** @var array  */
+    public $oldAttributes = [];
 }
