@@ -10,6 +10,9 @@ use yii\db\Expression;
 
 class ModelRevision extends Behavior
 {
+    const EVENT_BEFORE_REVISION_SAVE = 'beforeRevisionSave';
+
+    const EVENT_AFTER_REVISION_SAVE = 'afterRevisionSave';
 
     public $revisionModelId = 'model_id';
 
@@ -24,9 +27,6 @@ class ModelRevision extends Behavior
 
     /** @var array  */
     public $fields = [];
-
-    /** @var array  */
-    public $relations = [];
 
     /**
      * @inheritdoc
@@ -66,6 +66,14 @@ class ModelRevision extends Behavior
 
         if(!$existsRecord || $newAttributes != $oldAttributes) {
 
+            $event = new RevisionEvent(
+                [
+                    'model' => $owner,
+                    'attributes' => $newAttributes,
+                ]
+            );
+            $this->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
+
             $fields[ $this->revisionModelId ] = $owner->primaryKey;
             $fields[ $this->revisionAttributeData ] = $newAttributes;
             $fields[ $this->revisionUserId ] = (($user = \Yii::$app->get('user', FALSE)) && !$user->isGuest)? $user->id: null;
@@ -76,10 +84,14 @@ class ModelRevision extends Behavior
             $model->load($fields, '');
             $model->save();
 
-        }
+            $event = new RevisionEvent(
+                [
+                    'model' => $owner,
+                    'attributes' => $newAttributes,
+                ]
+            );
+            $this->trigger(self::EVENT_AFTER_REVISION_SAVE, $event);
 
-        if($this->relations){
-            $this->saveRelations();
         }
 
     }
@@ -104,8 +116,4 @@ class ModelRevision extends Behavior
         return $data;
     }
 
-    private function saveRelations()
-    {
-
-    }
 }
