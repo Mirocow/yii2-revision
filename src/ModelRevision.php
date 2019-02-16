@@ -7,6 +7,7 @@ use yii\base\Event;
 use yii\base\Exception;
 use yii\db\BaseActiveRecord;
 use yii\db\Expression;
+use yii\helpers\Json;
 
 class ModelRevision extends Behavior
 {
@@ -21,6 +22,8 @@ class ModelRevision extends Behavior
     public $revisionAttributeData = 'data';
 
     public $revisionClassNamespace = 'class_namespace';
+
+    public $revisionHash = 'hash';
 
     /** @var  */
     public $classModel;
@@ -79,10 +82,13 @@ class ModelRevision extends Behavior
 
         if($event->doSave) {
 
-            $fields[ $this->revisionModelId ] = $owner->primaryKey;
-            $fields[ $this->revisionAttributeData ] = $event->attributes;
-            $fields[ $this->revisionUserId ] = (($user = \Yii::$app->get('user', FALSE)) && !$user->isGuest)? $user->id: null;
-            $fields[ $this->revisionClassNamespace ] = get_class($owner);
+            $fields = [
+                $this->revisionModelId => $owner->primaryKey,
+                $this->revisionAttributeData => $event->attributes,
+                $this->revisionUserId => (($user = \Yii::$app->get('user', FALSE)) && !$user->isGuest)? $user->id: null,
+                $this->revisionClassNamespace => get_class($owner),
+                $this->revisionHash = md5(Json::encode($event->attributes, JSON_OBJECT_AS_ARRAY)),
+            ];
 
             /** @var BaseActiveRecord $model */
             $model = new $this->classModel;
