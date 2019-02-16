@@ -87,7 +87,7 @@ class ModelRevision extends Behavior
                 $this->revisionAttributeData => $event->attributes,
                 $this->revisionUserId => (($user = \Yii::$app->get('user', FALSE)) && !$user->isGuest)? $user->id: null,
                 $this->revisionClassNamespace => get_class($owner),
-                $this->revisionHash = md5(Json::encode($event->attributes, JSON_OBJECT_AS_ARRAY)),
+                $this->revisionHash => md5(Json::encode($event->attributes, JSON_OBJECT_AS_ARRAY)),
             ];
 
             /** @var BaseActiveRecord $model */
