@@ -60,11 +60,15 @@ class ModelRevision extends Behavior
             $oldAttributes = $this->getRevisionAttributes($oldAttributes);
         }
 
+        $existsRecord = ($this->classModel)::find()
+            ->where([$this->revisionModelId => $owner->primaryKey])
+            ->exists();
+
         $event = new RevisionEvent(
             [
                 'model' => $owner,
-                'newAttributes' => $newAttributes,
-                'oldAttributes' => $oldAttributes,
+                'attributes' => $newAttributes,
+                'doSave' => !$existsRecord || $event->newAttributes != $event->oldAttributes,
             ]
         );
         $owner->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
@@ -73,14 +77,10 @@ class ModelRevision extends Behavior
             $owner->{self::EVENT_BEFORE_REVISION_SAVE}($event);
         }
 
-        $existsRecord = ($this->classModel)::find()
-            ->where([$this->revisionModelId => $owner->primaryKey])
-            ->exists();
-
-        if(!$existsRecord || $newAttributes != $oldAttributes) {
+        if($event->doSave) {
 
             $fields[ $this->revisionModelId ] = $owner->primaryKey;
-            $fields[ $this->revisionAttributeData ] = $newAttributes;
+            $fields[ $this->revisionAttributeData ] = $event->attributes;
             $fields[ $this->revisionUserId ] = (($user = \Yii::$app->get('user', FALSE)) && !$user->isGuest)? $user->id: null;
             $fields[ $this->revisionClassNamespace ] = get_class($owner);
 
@@ -92,8 +92,7 @@ class ModelRevision extends Behavior
             $event = new RevisionEvent(
                 [
                     'model' => $owner,
-                    'newAttributes' => $newAttributes,
-                    'oldAttributes' => $oldAttributes,
+                    'attributes' => $event->attributes,
                 ]
             );
             $owner->trigger(self::EVENT_AFTER_REVISION_SAVE, $event);
