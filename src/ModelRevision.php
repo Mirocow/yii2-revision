@@ -71,7 +71,7 @@ class ModelRevision extends Behavior
             [
                 'model' => $owner,
                 'attributes' => $newAttributes,
-                'doSave' => !$existsRecord || $event->newAttributes != $event->oldAttributes,
+                'doSave' => !$existsRecord || $newAttributes != $oldAttributes,
             ]
         );
         $owner->trigger(self::EVENT_BEFORE_REVISION_SAVE, $event);
