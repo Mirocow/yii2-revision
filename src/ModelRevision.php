@@ -122,9 +122,7 @@ class ModelRevision extends Behavior
 
         foreach ($attributes as $attribute => $value) {
             if (in_array($attribute, $this->fields)) {
-                if (!empty($value)) {
-                    $data[ $attribute ] = $value;
-                }
+                $data[ $attribute ] = $value;
             }
         }
 
