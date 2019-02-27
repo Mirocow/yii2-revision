@@ -36,6 +36,10 @@ class ModelRevision extends Behavior
      */
     public function events()
     {
+        if(Yii::$app->request->isConsoleRequest) {
+            return [];
+        }
+        
         return [
             BaseActiveRecord::EVENT_AFTER_INSERT => 'makeRevision',
             BaseActiveRecord::EVENT_BEFORE_UPDATE => 'makeRevision',
